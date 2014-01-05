@@ -38,6 +38,10 @@ class LastRss
 	private static $downloadError = 'Download error: %s';
 	private static $fileOpenErorr = 'File error: Unable to open file %s';
 
+	private $cacheDir = "./cache";
+	private $cacheTime = 60 * 60; // in seconds
+	
+	
 	/**
 	 * If true, HTML will be stripped from HTML is suspected tags
 	 * @var boolean
@@ -255,7 +259,7 @@ class LastRss
 	 * @param string $url URL
 	 * @return array
 	 */
-	public function get($url)
+	public function getUrl($url)
 	{
 		$this->lastError = '';
 		// Get feed content
@@ -273,6 +277,33 @@ class LastRss
 		$this->lastError = '';
 		$xmlData = file_get_contents($filename);
 		return $this->parse($xmlData);
+	}
+
+	/**
+	 * Fetch RSS/Atom feed from remote URL, but retrieve cache if possible
+	 * @param string $url URL
+	 * @return array
+	 */
+	public function get($url)
+	{
+		$cache_file = $this->cacheDir . '/rsscache_' . md5($url);
+		$timedif = @(time() - filemtime($cache_file));
+		if ($timedif < $this->cacheTime) 
+		{
+			$result = unserialize( file_get_contents($cache_file) );
+			$result["cached"] = true;
+		}
+		else
+		{
+			$xmlData = $this->loadUrl($url);
+			$result = $this->parse($xmlData);
+			if ($result['itemsCount'] > 0)
+			{
+				@file_put_contents($cache_file,serialize($result));
+			}
+			$result["cached"] = false;
+		}
+		return $result;
 	}
 
 	/**
