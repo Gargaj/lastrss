@@ -24,7 +24,6 @@ class LastRss
 		CURLOPT_HEADER => false,
 		CURLOPT_CONNECTTIMEOUT => 15,
 		CURLOPT_TIMEOUT => 15,
-		CURLOPT_FOLLOWLOCATION => true,
 		CURLOPT_MAXREDIRS => 3,
 		CURLOPT_RETURNTRANSFER => 1,
 		CURLOPT_FAILONERROR => true,
@@ -94,7 +93,7 @@ class LastRss
 		foreach ($options as $name => $value) {
 			if (isset($this->$name))
 			{
-			  $this->$name = $value;
+				$this->$name = $value;
 			}
 		}
 	}
@@ -177,6 +176,8 @@ class LastRss
 		}
 		$ch = curl_init();
 		curl_setopt_array($ch, $this->curlOptions);
+		if (!ini_get('safe_mode'))
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($ch, CURLOPT_URL, $url);
 		if (!($content = curl_exec($ch))) {
 			$this->lastError = sprintf(self::$downloadError, curl_error($ch));
