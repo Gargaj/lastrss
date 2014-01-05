@@ -39,7 +39,7 @@ class LastRss
 	private static $fileOpenErorr = 'File error: Unable to open file %s';
 
 	private $cacheDir = "./cache";
-	private $cacheTime = 60 * 60; // in seconds
+	private $cacheTime = 3600; // in seconds
 	
 	
 	/**
@@ -85,6 +85,19 @@ class LastRss
 	private $usedXmlns = array();
 
 	public $lastError = null;
+
+	/**
+	 * Constructor to initialize all options
+	 */
+	public function __construct( $options = array() )
+	{
+		foreach ($options as $name => $value) {
+			if (isset($this->$name))
+			{
+			  $this->$name = $value;
+			}
+		}
+	}
 
 	/**
 	 * Register all xml namespaces used in channel tags or item tags.
