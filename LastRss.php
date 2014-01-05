@@ -173,7 +173,7 @@ class LastRss
 			throw new Exception('CURL is not installed!');
 		}
 		$ch = curl_init();
-		@curl_setopt_array($ch, $this->curlOptions);
+		curl_setopt_array($ch, $this->curlOptions);
 		curl_setopt($ch, CURLOPT_URL, $url);
 		if (!($content = curl_exec($ch))) {
 			$this->lastError = sprintf(self::$downloadError, curl_error($ch));
