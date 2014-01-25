@@ -24,7 +24,7 @@ class LastRss
 		CURLOPT_HEADER => false,
 		CURLOPT_CONNECTTIMEOUT => 15,
 		CURLOPT_TIMEOUT => 15,
-		CURLOPT_FOLLOWLOCATION => true,
+//		CURLOPT_FOLLOWLOCATION => true,
 		CURLOPT_MAXREDIRS => 3,
 		CURLOPT_RETURNTRANSFER => 1,
 		CURLOPT_FAILONERROR => true,
@@ -193,7 +193,8 @@ class LastRss
 		// Try to load XML or return parse error
 		if (false == @$doc->loadXml($xmlData)) {
 			// Try to fix XML by Tidy and try to load one more time
-			$xmlData = tidy_repair_string($xmlData, array('output-xml' => true, 'input-xml' => true), 'utf8');
+			if (function_exists("tidy_repair_string"))
+				$xmlData = tidy_repair_string($xmlData, array('output-xml' => true, 'input-xml' => true), 'utf8');
 			if (false == @$doc->loadXml($xmlData)) {
 				$this->lastError = self::$parseError;
 				return false;
@@ -298,21 +299,22 @@ class LastRss
 	{
 		$cache_file = $this->cacheDir . '/rsscache_' . md5($url);
 		$timedif = @(time() - filemtime($cache_file));
-		if ($timedif < $this->cacheTime) 
-		{
-			$result = unserialize( file_get_contents($cache_file) );
-			$result["cached"] = true;
-		}
-		else
+		if ($timedif > $this->cacheTime) 
 		{
 			$xmlData = $this->loadUrl($url);
 			$result = $this->parse($xmlData);
 			if ($result['itemsCount'] > 0)
 			{
 				@file_put_contents($cache_file,serialize($result));
+  			$result["cached"] = false;
 			}
-			$result["cached"] = false;
 		}
+		if (!$result['itemsCount'])
+		{
+			$result = unserialize( file_get_contents($cache_file) );
+			$result["cached"] = true;
+		}
+		
 		return $result;
 	}
 
